@@ -1,12 +1,9 @@
 #!/bin/sh
 set -eu
-
 WIN_JSON="$(hyprctl activewindow -j)"
 CLASS="$(printf "%s" "$WIN_JSON" | jq -r '.class')"
-
 # Toggle floating first (your original behaviour)
 hyprctl dispatch togglefloating
-
 # Helper: centre the active window on its current monitor using monitor geometry
 center_on_current_monitor() {
   # Active window details
@@ -36,7 +33,6 @@ center_on_current_monitor() {
   
   hyprctl dispatch moveactive exact "$nx" "$ny"
 }
-
 case "$CLASS" in
   Alacritty|floating-terminal)
     hyprctl dispatch resizeactive exact 637 737
@@ -65,5 +61,9 @@ case "$CLASS" in
   chrome-www.twitch.tv__-Default)
     hyprctl dispatch resizeactive exact 1498 1332
     hyprctl dispatch moveactive exact 2760 531
-    ;;  
+    ;;
+  *)
+    hyprctl dispatch resizeactive exact 1696 1360
+    center_on_current_monitor
+    ;;
 esac
