@@ -3,7 +3,7 @@ ADDRESS=$(hyprctl clients -j | jq -r '.[] | select(.class | contains("outlook.of
 if [ -n "$ADDRESS" ]; then
     hyprctl dispatch focuswindow "address:$ADDRESS"
 else
-    chromium --profile-directory="Profile 1" --app="https://outlook.office.com" \
+    vivaldi-stable --profile-directory="Profile 1" --app="https://outlook.office.com" \
         --hide-scrollbars \
         --enable-features=UseOzonePlatform,WebAppWindowControlsOverlay \
         --disable-features=WaylandWpColorManagerV1,WebContentsForceDark \

@@ -1,18 +1,22 @@
 #!/bin/sh
 set -eu
+
 WIN_JSON="$(hyprctl activewindow -j)"
 CLASS="$(printf "%s" "$WIN_JSON" | jq -r '.class')"
-# Toggle floating first (your original behaviour)
-hyprctl dispatch togglefloating
+
+# Toggle floating first, except for teams-for-linux which is managed separately
+case "$CLASS" in
+  teams-for-linux) ;;
+  *) hyprctl dispatch togglefloating ;;
+esac
+
 # Helper: centre the active window on its current monitor using monitor geometry
 center_on_current_monitor() {
-  # Active window details
   local win
   win="$(hyprctl activewindow -j)"
   local mon_id
   mon_id="$(printf "%s" "$win" | jq -r '.monitor')"
-  
-  # Monitor geometry (x,y,w,h). Prefer "reserved" aware area if present.
+
   local mon
   mon="$(hyprctl monitors -j | jq -r ".[] | select(.id == $mon_id)")"
   local mx my mw mh
@@ -20,19 +24,18 @@ center_on_current_monitor() {
   my="$(printf "%s" "$mon" | jq -r '.y')"
   mw="$(printf "%s" "$mon" | jq -r '.width')"
   mh="$(printf "%s" "$mon" | jq -r '.height')"
-  
-  # Active window size (after resize)
+
   local ww wh
   ww="$(hyprctl activewindow -j | jq -r '.size[0]')"
   wh="$(hyprctl activewindow -j | jq -r '.size[1]')"
-  
-  # Calculate centred top left
+
   local nx ny
   nx=$(( mx + (mw - ww) / 2 ))
   ny=$(( my + (mh - wh) / 2 ))
-  
+
   hyprctl dispatch moveactive exact "$nx" "$ny"
 }
+
 case "$CLASS" in
   Alacritty|floating-terminal)
     hyprctl dispatch resizeactive exact 637 737
@@ -47,6 +50,13 @@ case "$CLASS" in
     center_on_current_monitor
     ;;
   teams-for-linux)
+    TEAMS_ADDR="$(hyprctl clients -j | jq -r '.[] | select(.class == "teams-for-linux") | .address')"
+    PINNED="$(hyprctl clients -j | jq -r '.[] | select(.class == "teams-for-linux") | .pinned')"
+    hyprctl dispatch focuswindow address:"$TEAMS_ADDR"
+    sleep 0.05
+    if [ "$PINNED" = "false" ]; then
+      hyprctl dispatch togglefloating
+    fi
     hyprctl dispatch resizeactive exact 527 392
     hyprctl dispatch moveactive exact 4237 550
     ;;
