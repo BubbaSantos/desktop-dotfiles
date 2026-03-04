@@ -201,20 +201,20 @@ window#waybar {
 /* disk */
 #disk{
     padding: 2px 8px 2px 14px;
-    color: @foreground;
+    color: @primary;
 }
 
 /* memory */
 #memory {
     padding: 1px 8px;
-    color: @foreground;
+    color: @primary;
     background-color: transparent;
 }
 
 /* cpu */
 #cpu {
     padding: 1px 8px;
-    color: @foreground;
+    color: @primary;
     background-color: transparent;
 }
 
@@ -226,7 +226,7 @@ window#waybar {
 
 /* hyprwhspr */
 #custom-hyprwhspr { 
-  padding: 1px 0px 1px 10px;
+  padding: 1px 0px 2px 10px;
   text-decoration: none;
   border-bottom: none;
 }
