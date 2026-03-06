@@ -189,6 +189,7 @@ sddm
 signal-desktop
 slurp
 snapper
+socat
 sof-firmware
 spotify
 starship
