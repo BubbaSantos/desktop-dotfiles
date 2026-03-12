@@ -21,13 +21,14 @@ DELAY=$(printf "Dismiss\n5 min\n10 min\n15 min\n30 min\n1 hour" | rofi -dmenu \
     -me-select-entry '' \
     -me-accept-entry 'MousePrimary' \
     -theme-str '
-window { width: 250px; border-radius: 8px; background-color: #282828; border-color: #7daea3; border: 2px; anchor: north; location: north; y-offset: 40px; }
-mainbox { padding: 8px; spacing: 0; }
-inputbar { padding: 6px 8px; background-color: #3c3836; text-color: #d4be98; border-radius: 4px; margin: 0 0 6px 0; }
+window { width: 250px; border-radius: 8px; background-color: #1d2021; border-color: #7daea3; border: 2px; anchor: north; location: north; y-offset: 40px; }
+mainbox { padding: 8px; spacing: 0; background-color: #1d2021; }
+inputbar { padding: 6px 8px; background-color: #282828; text-color: #d4be98; border-radius: 4px; margin: 0 0 6px 0; }
 prompt { text-color: #7daea3; }
-listview { lines: 6; spacing: 4px; }
+listview { lines: 6; spacing: 4px; background-color: transparent; }
 element { padding: 4px 8px; border-radius: 4px; text-color: #d4be98; background-color: transparent; }
-element selected { background-color: #504945; text-color: #a9b665; }
+element selected { background-color: #32302f; text-color: #a9b665; }
+element alternate { background-color: transparent; }
 ')
 SOUND=~/.local/share/sounds/snooze.mp3
 fire_snooze() {

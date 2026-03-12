@@ -1,11 +1,10 @@
 #!/bin/bash
 
 url="$1"
+echo "$(date): Got URL: $url" >> /tmp/outlook-url-handler.log
 
-# If it's an Outlook-related URL, open in the Outlook app
 if [[ "$url" =~ outlook\.(live|office|com) ]] || [[ "$url" =~ ^mailto: ]]; then
     /opt/outlook-for-linux/outlook-for-linux "$url" &
 else
-    # For other URLs, use default browser
     xdg-open "$url"
 fi
