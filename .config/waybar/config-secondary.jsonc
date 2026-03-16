@@ -19,7 +19,8 @@
   "modules-right": [
     "network",
     "bluetooth",
-    "clock"
+    "clock",
+    "custom/alarm-indicator"
   ],
 
   // ============================================================================
@@ -155,7 +156,16 @@
     "actions": {
       "on-click-right": "mode"
     }
-  }
+  },
+
+  "custom/alarm-indicator": {
+    "exec": "~/.local/bin/waybar-alarm",
+    "interval": 10,
+    "signal": 8,
+    "return-type": "json",
+    "on-click": "~/.local/bin/waybar-alarm click",
+    "tooltip": true
+}
 
   // ============================================================================
   // UNUSED MODULES (commented out)

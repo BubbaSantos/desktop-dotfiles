@@ -21,7 +21,10 @@
     "custom/hyprwhspr",
     "network",
     "bluetooth",
-    "clock"
+    "clock",
+    "custom/alarm-indicator"
+
+    
   ],
 
   // ============================================================================
@@ -168,15 +171,15 @@
 
   "custom/hyprwhspr": {
     "format": "{}",
-    "exec": "/usr/lib/hyprwhspr/config/hyprland/hyprwhspr-tray.sh status",
+    "exec": "~/.local/bin/hyprwhspr-status.sh status",
     "interval": 1,
     "return-type": "json",
     "exec-on-event": true,
-    "on-click": "/usr/lib/hyprwhspr/config/hyprland/hyprwhspr-tray.sh record",
-    "_old_on-click-right": "/usr/lib/hyprwhspr/config/hyprland/hyprwhspr-tray.sh restart",
+    "signal": 2,
+    "on-click": "~/.local/bin/hyprwhspr-status.sh toggle-mute",
     "on-click-right": "bash -c 'pkill -9 ydotoold; rm -f /run/user/1000/.ydotool_socket; systemctl --user restart ydotool; sleep 0.5; systemctl --user restart hyprwhspr'",
     "tooltip": true
-  },
+},
 
   "network": {
     "format-icons": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
@@ -209,6 +212,7 @@
     "format-alt": "{:%A %d %B %Y}",
     "tooltip": true,
     "tooltip-format": "<tt><big>{calendar}</big></tt>",
+    "on-click-right": "~/.local/bin/waybar-alarm click",
     "calendar": {
       "mode": "month",
       "mode-mon-col": 3,
@@ -224,7 +228,16 @@
     "actions": {
       "on-click-right": "mode"
     }
-  }
+  },
+
+  "custom/alarm-indicator": {
+    "exec": "~/.local/bin/waybar-alarm",
+    "interval": 10,
+    "signal": 8,
+    "return-type": "json",
+    "on-click": "~/.local/bin/waybar-alarm click",
+    "tooltip": true
+}
 
   // ============================================================================
   // UNUSED MODULES (commented out)

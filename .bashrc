@@ -20,6 +20,7 @@ alias hdconf='nvim ~/.local/share/omarchy/default/hypr'
 alias er='espanso restart'
 alias pcc='pick-current-colors'
 alias ee='espanso edit'
+alias wayc='waybar-colorscheme'
 alias ip="ip -4 route get 1.1.1.1 | awk '{print $7; exit}'"
 alias dsr='rm ~/.local/share/org.gnome.SoundRecorder/Recording*'
 export PATH="$HOME/.local/bin:$PATH"

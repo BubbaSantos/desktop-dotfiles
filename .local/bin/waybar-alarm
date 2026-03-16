@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# ~/.local/bin/waybar-alarm
+
+ALARM_FILE="/tmp/waybar-alarm-time"
+STATE_FILE="/tmp/waybar-alarm-state"
+
+get_state() {
+    cat "$STATE_FILE" 2>/dev/null || echo "idle"
+}
+
+set_state() {
+    echo "$1" > "$STATE_FILE"
+}
+
+on_click() {
+    local state
+    state=$(get_state)
+
+    if [[ "$state" == "ringing" ]]; then
+        set_state "idle"
+        rm -f "$ALARM_FILE"
+        pkill -f "waybar-alarm-daemon" 2>/dev/null
+        pkill -f "paplay" 2>/dev/null
+        pkill -RTMIN+8 waybar 2>/dev/null
+        return
+    fi
+
+    if [[ "$state" == "set" ]]; then
+        local alarm_time
+        alarm_time=$(cat "$ALARM_FILE" 2>/dev/null)
+        local chosen
+        chosen=$(printf '❌ Cancel alarm (%s)\n' "$alarm_time" | rofi -dmenu \
+    -p "⏰ Alarm" \
+    -location 3 \
+    -xoffset -10 \
+    -yoffset 30 \
+    -theme-str 'window {width: 270px;}' \
+    -theme-str 'listview {lines: 1;}' \
+    -me-select-entry '' \
+    -me-accept-entry 'MousePrimary')
+        if [[ "$chosen" == ❌* ]]; then
+            set_state "idle"
+            rm -f "$ALARM_FILE"
+            pkill -f "waybar-alarm-daemon" 2>/dev/null
+            pkill -RTMIN+8 waybar 2>/dev/null
+        fi
+        return
+    fi
+
+    # Idle — build 8 slots in 15-min increments from now
+    local now_min now_hour
+    now_hour=$(date +%H)
+    now_min=$(date +%M)
+
+    local next_min=$(( (now_min / 15 + 1) * 15 ))
+    local carry=0
+    if (( next_min >= 60 )); then next_min=$(( next_min - 60 )); carry=1; fi
+    local cur_hour=$(( (now_hour + carry) % 24 ))
+    local cur_min=$next_min
+
+   local slot_times=()
+    for i in $(seq 0 31); do    # 32 slots × 15min = 8 hours
+        slot_times+=( "$(printf '%02d:%02d' $cur_hour $cur_min)" )
+        cur_min=$(( cur_min + 15 ))
+        if (( cur_min >= 60 )); then
+            cur_min=$(( cur_min - 60 ))
+            cur_hour=$(( (cur_hour + 1) % 24 ))
+        fi
+    done
+
+    chosen=$(printf '%s\n' "${slot_times[@]}" | rofi -dmenu \
+        -p "⏰ Set alarm" \
+        -location 3 \
+        -xoffset -10 \
+        -yoffset 30 \
+        -theme-str 'window {width: 200px;}' \
+        -theme-str 'listview {lines: 5;}' \
+        -me-select-entry '' \
+        -me-accept-entry 'MousePrimary')    # scrollable, shows 12 at a time
+
+    [[ -z "$chosen" ]] && return
+
+    echo "$chosen" > "$ALARM_FILE"
+    set_state "set"
+    nohup bash ~/.local/bin/waybar-alarm-daemon &>/dev/null &
+    pkill -RTMIN+8 waybar 2>/dev/null
+}
+
+output_json() {
+    local state
+    state=$(get_state)
+
+    case "$state" in
+        ringing)
+            echo '{"text": "󰀠", "class": "ringing", "tooltip": "Alarm ringing! Click to dismiss"}'
+            ;;
+        set)
+            local alarm_time
+            alarm_time=$(cat "$ALARM_FILE" 2>/dev/null)
+            echo '{"text": "󰀠", "class": "alarm-set", "tooltip": "Alarm set for '"$alarm_time"'\nClick to cancel"}'
+            ;;
+        *)
+            echo '{"text": "", "class": "idle", "tooltip": "Right-click clock to set alarm"}'
+            ;;
+    esac
+}
+
+case "$1" in
+    click) on_click ;;
+    *)     output_json ;;
+esac

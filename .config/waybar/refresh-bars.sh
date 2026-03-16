@@ -3,8 +3,8 @@
 
 #notify-send "Reloading" "Killing processes..."
 
-pkill -9 -f "cava.sh"
-pkill -9 cava
+pkill -9 -f "cava.sh" 2>/dev/null
+pkill -9 cava 2>/dev/null
 killall -9 waybar  # Use killall with exact name
 sleep 0.3
 

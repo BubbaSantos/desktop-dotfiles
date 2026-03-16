@@ -231,6 +231,10 @@ window#waybar {
   border-bottom: none;
 }
 
+#custom-hyprwhspr.muted {
+  color: #fb4934;
+}
+
 /* network */
 #network {
     padding: 1px 10px 1px 6px;
@@ -354,4 +358,44 @@ tooltip {
 
 tooltip label {
     color: @foreground;
+}
+
+/* Alarm indicator */
+#custom-alarm-indicator {
+    padding: 1px 0px 1px 0px;
+    min-width: 0;
+    transition: all 0.3s ease;
+}
+
+#custom-alarm-indicator.idle {
+    min-width: 0;
+    padding: 0;
+}
+
+#custom-alarm-indicator.alarm-set {
+    padding: 1px 6px 1px 0px;
+    color: #fabd2f;
+}
+
+#custom-alarm-indicator.ringing {
+    padding: 1px 6px 1px 0px;
+    color: #cc241d;
+    animation: alarm-pulse 0.6s ease-in-out infinite alternate;
+}
+
+/* Clock gets red flash when alarm rings */
+#clock.ringing {
+    color: #cc241d;
+    animation: alarm-pulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes alarm-pulse {
+    from {
+        color: #cc241d;
+        text-shadow: 0 0 4px #cc241d;
+    }
+    to {
+        color: #fb4934;
+        text-shadow: 0 0 12px #fb4934, 0 0 20px #cc241d;
+    }
 }
