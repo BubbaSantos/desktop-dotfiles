@@ -235,6 +235,13 @@ window#waybar {
   color: #fb4934;
 }
 
+#custom-hyprwhspr.recording {
+  color: #82bf56;
+  border-bottom-color: #82bf56;
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
 /* network */
 #network {
     padding: 1px 10px 1px 6px;

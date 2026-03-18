@@ -1,87 +1,53 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+# Work Workflow Script (Desktop)
 
-need() { command -v "$1" >/dev/null 2>&1 || { echo "Missing: $1" >&2; exit 1; }; }
-need hyprctl
-need jq
+SLEEP=0.3
+LAUNCH_SLEEP=0.8
+GROUP_SLEEP=1.2
 
-cleanup() {
-  # Clears the temporary rules by reloading your normal config
-  hyprctl reload >/dev/null 2>&1 || true
-}
-trap cleanup EXIT
+# --- Workspace 1: Vivaldi, ChatGPT, To Do ---
+hyprctl dispatch workspace 1
+sleep $SLEEP
 
-# 1) Inject temporary rules (only active until reload)
-# Workspace placement
-hyprctl keyword windowrulev2 'workspace 1 silent, class:^(vivaldi-stable)$' >/dev/null
+vivaldi --ozone-platform=wayland --enable-features=TouchpadOverscrollHistoryNavigation,UseOzonePlatform,WaylandWindowDecorations --force-device-scale-factor=1 https://midaspro.mab.org.uk/Midas.Homepage/ &
+sleep $LAUNCH_SLEEP
 
-hyprctl keyword windowrulev2 'workspace 1 silent, class:^(chrome-to-do\.office\.com__tasks-Profile_1)$' >/dev/null
-hyprctl keyword windowrulev2 'workspace 1 silent, class:^(chrome-chatgpt\.com__-Profile_1)$' >/dev/null
+chromium --app="https://chatgpt.com" &
+sleep $GROUP_SLEEP
 
-hyprctl keyword windowrulev2 'workspace 2 silent, class:^(chrome-outlook\.office\.com__-Profile_1)$' >/dev/null
-hyprctl keyword windowrulev2 'workspace 2 silent, class:^(chrome-teams\.microsoft\.com__v2_-Profile_1)$' >/dev/null
+hyprctl dispatch togglegroup
+sleep $SLEEP
 
-# For workspace 2, we need To Do and ChatGPT as well, but they share the same class as workspace 1.
-# So we distinguish by the initialTitle, which you provided.
-hyprctl keyword windowrulev2 'workspace 1 silent, class:^(chrome-to-do\.office\.com__tasks-Profile_1)$, initialtitle:^(to-do\.office\.com_/tasks)$' >/dev/null
-hyprctl keyword windowrulev2 'workspace 2 silent, class:^(chrome-to-do\.office\.com__tasks-Profile_1)$, initialtitle:^(to-do\.office\.com_/tasks)$' >/dev/null
+chromium --app="https://to-do.office.com/tasks/inbox" &
+sleep $SLEEP
 
-hyprctl keyword windowrulev2 'workspace 1 silent, class:^(chrome-chatgpt\.com__-Profile_1)$, initialtitle:^(chatgpt\.com_/)$' >/dev/null
-hyprctl keyword windowrulev2 'workspace 2 silent, class:^(chrome-chatgpt\.com__-Profile_1)$, initialtitle:^(chatgpt\.com_/)$' >/dev/null
+# --- Workspace 2: Outlook, ChatGPT, To Do ---
+hyprctl dispatch workspace 2
+sleep $SLEEP
 
-# Notion
-hyprctl keyword windowrulev2 'workspace 6 silent, class:^(chrome-www\.notion\.so__-Profile_1)$' >/dev/null
+~/.config/hypr/scripts/toggle-outlook.sh &
+sleep $LAUNCH_SLEEP
 
-# 2) Launch apps
-vivaldi-stable --new-window "https://sts.mymortgageaccount.co.uk/Account/Login" >/dev/null 2>&1 &
+chromium --app="https://chatgpt.com" &
+sleep $GROUP_SLEEP
 
-chromium --new-window --ozone-platform=wayland --app="https://to-do.office.com/tasks" --force-new-instance >/dev/null 2>&1 &
-chromium --new-window --ozone-platform=wayland --app="https://chatgpt.com/" --force-new-instance >/dev/null 2>&1 &
+hyprctl dispatch togglegroup
+sleep $SLEEP
 
-chromium --new-window --ozone-platform=wayland --app="https://outlook.office.com/mail" --force-new-instance >/dev/null 2>&1 &
-chromium --new-window --ozone-platform=wayland --app="https://to-do.office.com/tasks" --force-new-instance >/dev/null 2>&1 &
-chromium --new-window --ozone-platform=wayland --app="https://chatgpt.com/" --force-new-instance >/dev/null 2>&1 &
-chromium --new-window --ozone-platform=wayland --app="https://teams.microsoft.com/v2/" --force-new-instance >/dev/null 2>&1 &
+chromium --app="https://to-do.office.com/tasks/inbox" &
+sleep $SLEEP
 
-chromium --new-window --ozone-platform=wayland --app="https://www.notion.so/" --force-new-instance >/dev/null 2>&1 &
+# --- Workspace 3: Teams ---
+hyprctl dispatch workspace 3
+sleep $SLEEP
 
-# 3) Grouping (best effort)
-sleep 2
+~/.config/hypr/scripts/toggle-teams-linux.sh &
+sleep $SLEEP
 
-focus_addr() { hyprctl dispatch focuswindow "address:$1" >/dev/null; }
+# --- Workspace 11: Notion ---
+hyprctl dispatch workspace 11
+sleep $SLEEP
 
-addr_ws_class() {
-  local ws="$1"
-  local class="$2"
-  hyprctl clients -j | jq -r --argjson ws "$ws" --arg class "$class" '
-    [ .[] | select(.workspace.id == $ws and .class == $class) ] | sort_by(.focusHistoryID) | last | .address // empty
-  '
-}
+~/.config/hypr/scripts/toggle-notion.sh &
 
-group_ws() {
-  local ws="$1"
-  shift
-  local addrs=("$@")
-  ((${#addrs[@]} >= 2)) || return 0
-  hyprctl dispatch workspace "$ws" >/dev/null
-  sleep 0.2
-  focus_addr "${addrs[0]}"
-  hyprctl dispatch togglegroup >/dev/null
-  for a in "${addrs[@]:1}"; do
-    focus_addr "$a"
-    hyprctl dispatch togglegroup >/dev/null
-  done
-}
-
-# Workspace 1 group: To Do + ChatGPT
-A1="$(addr_ws_class 1 "chrome-to-do.office.com__tasks-Profile_1")"
-B1="$(addr_ws_class 1 "chrome-chatgpt.com__-Profile_1")"
-[[ -n "$A1" && -n "$B1" ]] && group_ws 1 "$A1" "$B1"
-
-# Workspace 2 group: To Do + ChatGPT + Teams
-A2="$(addr_ws_class 2 "chrome-to-do.office.com__tasks-Profile_1")"
-B2="$(addr_ws_class 2 "chrome-chatgpt.com__-Profile_1")"
-C2="$(addr_ws_class 2 "chrome-teams.microsoft.com__v2_-Profile_1")"
-[[ -n "$A2" && -n "$B2" && -n "$C2" ]] && group_ws 2 "$A2" "$B2" "$C2"
-
-# Done. cleanup trap will reload, removing temporary rules.
+notify-send "Work Workflow" "Applications launched" -t 3000

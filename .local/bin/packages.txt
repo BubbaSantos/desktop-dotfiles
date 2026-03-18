@@ -99,6 +99,7 @@ inetutils
 intel-ucode
 inxi
 iwd
+jome
 jq
 kdenlive
 keyd

@@ -115,6 +115,11 @@
   "special-visible-only": true
 },
 
+  "custom/dismiss": {
+  "format": " ",
+  "tooltip": false,
+  "on-click-right": "makoctl dismiss --all"
+},
   // ============================================================================
   // RIGHT MODULES
   // ============================================================================
